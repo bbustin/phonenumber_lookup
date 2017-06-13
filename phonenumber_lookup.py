@@ -1,7 +1,8 @@
 '''
 Looks up a phone number and displays information about it.
 
-Must have the phonenumbers library installed (pip install phonenumbers)
+author:: Brian Bustin <brian@bustin.us>
+author:: Nicole Kenaston Bustin <niki@bustin.us>
 '''
 import sys
 if sys.version_info[0] < 3 and sys.version_info[1] < 3:
@@ -20,7 +21,7 @@ from phonenumbers import geocoder, carrier
 
 DEFAULT_LANGUAGE = 'en'
 LOCALES = [locale  for locale in geocoder.LOCALE_DATA]
-REGIONS = RegionCodes('regions.yaml', logger=logger).regions
+REGIONS = {}
 FIELDNAMES = ["raw_input", "assumed_local_locale", "E164",  "region", "country", "description", "carrier", "comment"]
 
 def parse_multiple_numbers(phone_numbers, locale, output, language=DEFAULT_LANGUAGE, **kwargs):
@@ -117,6 +118,8 @@ if __name__ == "__main__":
     log_formatter = logging.Formatter('%(levelname)s - %(message)s')
     log_console.setFormatter(log_formatter)
     logger.addHandler(log_console)
+
+    REGIONS = RegionCodes(logger=logger).regions #need to do this down here or will not get logging
 
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument("-output")

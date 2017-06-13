@@ -11,13 +11,13 @@ Since the sources are being screen-scraped and can change at any time, it is rec
 that a regions.yaml file be distributed with the source. To generate a new regions.yaml file
 rename or delete your existing regions.yaml file
 
-TODO: Add debug logging
+author:: Brian Bustin <brian@bustin.us>
+author:: Nicole Kenaston Bustin <niki@bustin.us>
 """
 
 import logging
 import requests
 import yaml
-from lxml import etree
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +72,14 @@ class RegionCodes():
 
     def _generate_regions(self):
         self.logger.info("Generating regions")
+        # doing it this way so having LXML is not a requirement unless generating the regions file
+        try:
+            from lxml import etree
+            self.etree = etree
+        except ImportError as ex:
+            logger.error("Could not generate the regions file. Please install lxml first. 'pip install lxml'")
+            exit(1)
+
         alpha_2_codes = self._scrape_alpha_2_codes()
         result = self._scrape_regions(alpha_2_codes)
         self._save_regions(result)
@@ -82,7 +90,7 @@ class RegionCodes():
         Scrapes the ISO_3166-1 Alpha-2 codes
         """
         page = requests.get('https://en.wikipedia.org/wiki/ISO_3166-1')
-        tree = etree.HTML(page.content)
+        tree = self.etree.HTML(page.content)
 
         table = tree.xpath('//*[@id="Current_codes"]/following::table[1]')[0]
 
@@ -112,7 +120,7 @@ class RegionCodes():
         """
         def parse_table_to_list():
             page = requests.get('https://unstats.un.org/unsd/methodology/m49/')
-            tree = etree.HTML(page.content)
+            tree = self.etree.HTML(page.content)
 
             table = tree.xpath('//*[@id="GeoGroupsENG"]')[0]
 
