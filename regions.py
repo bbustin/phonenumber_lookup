@@ -55,21 +55,23 @@ class RegionCodes():
         try:
             result = self._load_regions()
         except Exception as ex:
-            logger.warn("could not load regions file: {}".format(ex))
+            self.logger.warn("could not load regions file: {}".format(ex))
             result = self._generate_regions()
 
         return result
 
     def _load_regions(self):
+        self.logger.debug('loading regions from {}'.format(self.regions_file_path))
         with open(self.regions_file_path, 'r') as regions_file:
             return yaml.safe_load(regions_file)
 
     def _save_regions(self, regions):
+        self.logger.debug('saving regions to {}'.format(self.regions_file_path))
         with open(self.regions_file_path, 'w') as regions_file:
             yaml.safe_dump(regions, regions_file)
 
     def _generate_regions(self):
-        logger.info("Generating regions")
+        self.logger.info("Generating regions")
         alpha_2_codes = self._scrape_alpha_2_codes()
         result = self._scrape_regions(alpha_2_codes)
         self._save_regions(result)

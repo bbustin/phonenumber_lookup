@@ -7,16 +7,20 @@ import sys
 if sys.version_info[0] < 3 and sys.version_info[1] < 3:
     raise Exception("Only works with Python 3.3 and above")
 
+import logging
+logger = logging.getLogger(__name__)
+
 import phonenumbers
 import multiprocessing
 import csv
 import yaml
 import pprint
+from regions import RegionCodes
 from phonenumbers import geocoder, carrier
 
 DEFAULT_LANGUAGE = 'en'
 LOCALES = [locale  for locale in geocoder.LOCALE_DATA]
-REGIONS = yaml.load(open('regions.yaml', 'r'))
+REGIONS = RegionCodes('regions.yaml', logger=logger).regions
 FIELDNAMES = ["raw_input", "assumed_local_locale", "E164",  "region", "country", "description", "carrier", "comment"]
 
 def parse_multiple_numbers(phone_numbers, locale, output, language=DEFAULT_LANGUAGE, **kwargs):
@@ -58,8 +62,12 @@ def parse_single_number(phone_number,  locale, language=DEFAULT_LANGUAGE, **kwar
                 except (phonenumbers.NumberParseException, ValueError):
                     pass
 
-    if len(results) == 0 or len(results) > 1:
+    if len(results) == 0:
         final_result = {'raw_input': phone_number, 'comment': 'Needs manual review'}
+        logger.warn("'{}' does not appear to be a valid number for any of the following: {}".format(phone_number, ", ".join([country for country in locale])))
+    elif len(results) > 1:
+        final_result = {'raw_input': phone_number, 'comment': 'Needs manual review'}
+        logger.warn("'{}' could be a valid number in any of the following: {}".format(phone_number, ", ".join([possible_match['assumed_local_locale'] for possible_match in results])))
     else:
         final_result = results[0]
             
@@ -102,6 +110,13 @@ def csv_first_column_iterator(path):
 # what to do if called from the CLI
 if __name__ == "__main__":
     import argparse
+
+    logger.setLevel(logging.DEBUG)
+    log_console = logging.StreamHandler()
+    log_console.setLevel(logging.DEBUG)
+    log_formatter = logging.Formatter('%(levelname)s - %(message)s')
+    log_console.setFormatter(log_formatter)
+    logger.addHandler(log_console)
 
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument("-output")
