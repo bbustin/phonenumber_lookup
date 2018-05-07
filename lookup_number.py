@@ -135,7 +135,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(prog="Phone Number Parsing Utility", description="Parses phone numbers to try to determine region, country, carrier, and other geographic information such as city and state")
 
-    subparsers = parser.add_subparsers(title="source")
+    subparsers = parser.add_subparsers(title="source", dest='source')
+    subparsers.required = True
 
     subparser_cli = subparsers.add_parser("cli", parents=[parent_parser], help="Input one or more numbers from the command line")
     subparser_cli.set_defaults(function=parse_multiple_numbers)
