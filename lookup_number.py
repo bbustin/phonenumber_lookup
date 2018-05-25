@@ -142,7 +142,7 @@ if __name__ == "__main__":
     subparser_cli.set_defaults(function=parse_multiple_numbers)
     subparser_cli.add_argument("phone_numbers", action="append", help="Phone number(s) to look up")
 
-    subparser_csv = subparsers.add_parser("csv", parents=[parent_parser], help="command line")
+    subparser_csv = subparsers.add_parser("csv", parents=[parent_parser], help="Numbers are in a CSV file with the numbers in the first column")
     subparser_csv.set_defaults(function=parse_multiple_numbers)
     subparser_csv.add_argument("-input",
         dest="phone_numbers",
